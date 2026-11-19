@@ -1,0 +1,115 @@
+<!doctype html><html><head><meta charset='utf-8'><title>router-config-xray report</title>
+<style>body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:2rem;max-width:1100px} pre{background:#f6f8fa;padding:1rem;overflow:auto;border-radius:6px} h1{margin-bottom:.2rem} .meta{color:#555}</style></head>
+<body><h1>router-config-xray report</h1><p class='meta'>Generated 2026-11-19T13:34:16Z UTC · mode: read-only (no login, no state changes, no persistence/backdoor, no firmware flashing)</p><h2>Target: file:///home/anonymous/router-config-xray/samples/decoy_config.xml</h2><p><b>Summary:</b> Offline analysis of provided config file (for authorized review).</p><p><b>Access:</b> Offline file analysis (no network request).</p><h3>Device</h3><pre>{
+  &quot;ManufacturerOUI&quot;: &quot;001122&quot;,
+  &quot;ProductClass&quot;: &quot;EXAMPLE-ROUTER-X1&quot;,
+  &quot;SerialNumber&quot;: &quot;EXAMPLE123456&quot;,
+  &quot;DeviceSerialNumber&quot;: &quot;EXAMPLE123456&quot;,
+  &quot;HardwareVersion&quot;: &quot;V1.0&quot;,
+  &quot;SoftwareVersion&quot;: &quot;V2.0.0&quot;,
+  &quot;X_Customer_MACAddress&quot;: &quot;00:11:22:33:44:55&quot;,
+  &quot;TrueVendorID&quot;: &quot;EXAMPLEVENDOR&quot;,
+  &quot;AccessType&quot;: &quot;Gpon&quot;,
+  &quot;Product_ID&quot;: &quot;EXAMPLE-ROUTER-X1&quot;
+}</pre><h3>Admin/Web Account</h3><pre>{
+  &quot;username&quot;: &quot;admin&quot;,
+  &quot;password&quot;: {
+    &quot;raw&quot;: &quot;ExampleAdminPass!&quot;,
+    &quot;recovered&quot;: &quot;ExampleAdminPass!&quot;
+  }
+}</pre><h3>User GUI Account</h3><pre>{
+  &quot;username&quot;: &quot;user&quot;,
+  &quot;password&quot;: {
+    &quot;raw&quot;: &quot;ExampleUserPass!&quot;,
+    &quot;recovered&quot;: &quot;ExampleUserPass!&quot;
+  }
+}</pre><h3>Service Accounts</h3><pre>{
+  &quot;FtpUserName&quot;: &quot;ftpuser&quot;,
+  &quot;FtpPassword&quot;: {
+    &quot;raw&quot;: &quot;ExampleFtpPass!&quot;,
+    &quot;recovered&quot;: &quot;ExampleFtpPass!&quot;
+  }
+}</pre><h3>Wi-Fi</h3><pre>[
+  {
+    &quot;SSID&quot;: &quot;ExampleWiFi&quot;,
+    &quot;Enable&quot;: &quot;1&quot;,
+    &quot;BeaconType&quot;: &quot;11i&quot;,
+    &quot;WPAAuthenticationMode&quot;: &quot;PSKAuthentication&quot;,
+    &quot;IEEE11iEncryptionModes&quot;: &quot;AESEncryption&quot;,
+    &quot;WlKey&quot;: {
+      &quot;raw&quot;: &quot;ExampleWifiKey123&quot;,
+      &quot;recovered&quot;: &quot;ExampleWifiKey123&quot;
+    },
+    &quot;PreSharedKeys&quot;: [
+      {
+        &quot;raw&quot;: &quot;\n          &lt;PreSharedKey&gt;ExampleWifiKey123&quot;,
+        &quot;recovered&quot;: &quot;\n          &lt;PreSharedKey&gt;ExampleWifiKey123&quot;
+      }
+    ]
+  },
+  {
+    &quot;SSID&quot;: &quot;GuestNetwork&quot;,
+    &quot;Enable&quot;: &quot;0&quot;
+  }
+]</pre><h3>TR-069/ACS/CWMP</h3><pre>{
+  &quot;URL&quot;: &quot;https://acs.example.invalid:7547/&quot;,
+  &quot;Username&quot;: &quot;acs_user&quot;,
+  &quot;Password&quot;: {
+    &quot;raw&quot;: &quot;acs_example_pass&quot;,
+    &quot;recovered&quot;: &quot;acs_example_pass&quot;
+  },
+  &quot;PeriodicInformEnable&quot;: &quot;1&quot;,
+  &quot;PeriodicInformInterval&quot;: &quot;300&quot;,
+  &quot;ConnectionRequestUsername&quot;: &quot;cr_user&quot;,
+  &quot;ConnectionRequestPassword&quot;: {
+    &quot;raw&quot;: &quot;cr_example_pass&quot;,
+    &quot;recovered&quot;: &quot;cr_example_pass&quot;
+  },
+  &quot;X_Customer_EnableCWMP&quot;: &quot;1&quot;,
+  &quot;X_Customer_ConnectionRequestPort&quot;: &quot;7547&quot;,
+  &quot;X_Customer_EnableCWMPWanAcl&quot;: &quot;0&quot;,
+  &quot;X_Customer_ACL_IpAndMask&quot;: &quot;&quot;
+}</pre><h3>WAN</h3><pre>[
+  {
+    &quot;type&quot;: &quot;WANPPPConnection&quot;,
+    &quot;Username&quot;: &quot;pppoe_user@example.invalid&quot;,
+    &quot;Password&quot;: {
+      &quot;raw&quot;: &quot;pppoe_example_pass&quot;,
+      &quot;recovered&quot;: &quot;pppoe_example_pass&quot;
+    },
+    &quot;ExternalIPAddress&quot;: &quot;203.0.113.10&quot;,
+    &quot;DefaultGateway&quot;: &quot;203.0.113.1&quot;,
+    &quot;DNSServers&quot;: &quot;198.51.100.53,198.51.100.54&quot;,
+    &quot;MACAddress&quot;: &quot;00:11:22:33:44:55&quot;,
+    &quot;X_Customer_ServiceList&quot;: &quot;INTERNET&quot;,
+    &quot;Name&quot;: &quot;INTERNET_EXAMPLE&quot;,
+    &quot;Enable&quot;: &quot;1&quot;,
+    &quot;ConnectionType&quot;: &quot;IP_Routed&quot;,
+    &quot;NATEnabled&quot;: &quot;1&quot;,
+    &quot;AddressingType&quot;: &quot;PPPoE&quot;
+  }
+]</pre><h3>LAN</h3><pre>[
+  {
+    &quot;DHCPServerEnable&quot;: &quot;1&quot;,
+    &quot;MinAddress&quot;: &quot;192.168.0.100&quot;,
+    &quot;MaxAddress&quot;: &quot;192.168.0.200&quot;,
+    &quot;SubnetMask&quot;: &quot;255.255.255.0&quot;,
+    &quot;LAN_IP&quot;: &quot;192.168.0.1&quot;
+  }
+]</pre><h3>Impact Assessment</h3><pre>{
+  &quot;impact_assessment&quot;: &quot;high&quot;,
+  &quot;potential_impacts&quot;: [
+    &quot;Administrative account material exposed — may enable full device management access if reused/valid.&quot;,
+    &quot;Wireless network credentials/keys exposed — may enable unauthorized network access and traffic visibility.&quot;,
+    &quot;Remote management (TR-069/ACS/CWMP) details exposed — may increase risk of remote provisioning abuse depending on reachability and controls.&quot;,
+    &quot;WAN/PPPoE/service details exposed — may aid service abuse, impersonation, or targeted attacks.&quot;,
+    &quot;Additional user/service account material exposed.&quot;
+  ],
+  &quot;factors&quot;: [
+    &quot;Reachability matters: LAN/Wi-Fi exposure differs from internet/WAN exposure.&quot;,
+    &quot;No authentication required for the exposed endpoint increases risk when reachable.&quot;,
+    &quot;Router/gateway compromise can have downstream impact on connected devices and traffic.&quot;,
+    &quot;Actual impact depends on credential validity, service exposure, and mitigations — assess in your environment.&quot;
+  ],
+  &quot;note&quot;: &quot;This tool reports observed exposure and indicators; it does not assign a definitive severity/CVSS score.&quot;
+}</pre></body></html>

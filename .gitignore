@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+
+# Reports / local artifacts (may contain sensitive findings)
+reports/
+*.local.json
+*.local.html
+*.local.xml
+*.pcap
+*.har
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp

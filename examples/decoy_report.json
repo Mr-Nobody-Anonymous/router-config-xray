@@ -1,0 +1,383 @@
+{
+  "tool": "router-config-xray",
+  "version": "1.1.0",
+  "mode": "read-only (no login, no state changes, no persistence/backdoor, no firmware flashing)",
+  "generated_at_utc": "2026-11-19T13:34:16Z",
+  "compatibility_notes": [
+    "Best-effort extraction is tuned for DslCpeConfig/TR-069-style XML exports (e.g. configs exposing /config.xml).",
+    "Primary observed profile (authorized testing): SCTY TG2212-class GPON CPE/ONT gateways using a ty_httpd-style web interface with unauthenticated /config.xml.",
+    "Detection/parsing is generic and may work on other routers/firmwares, but coverage and field mapping vary by model and software."
+  ],
+  "results": [
+    {
+      "target": "file:///home/anonymous/router-config-xray/samples/decoy_config.xml",
+      "checked_at_utc": "2026-11-19T13:34:16Z",
+      "paths": [
+        {
+          "url": "file:///home/anonymous/router-config-xray/samples/decoy_config.xml",
+          "status": 200,
+          "verdict": "LIKELY_EXPOSED_CONFIG",
+          "analysis": {
+            "bytes": 3566,
+            "config_markers": 14,
+            "sensitive_hits": 15,
+            "fingerprint_hints": [
+              "Config schema: DslCpeConfig (TR-069/CWMP-style XML)",
+              "Device identifiers present: vendor=EXAMPLEVENDOR model=EXAMPLE-ROUTER-X1",
+              "TR-069/CWMP management structures present"
+            ],
+            "extracted": {
+              "device_info": {
+                "ManufacturerOUI": "001122",
+                "ProductClass": "EXAMPLE-ROUTER-X1",
+                "SerialNumber": "EXAMPLE123456",
+                "DeviceSerialNumber": "EXAMPLE123456",
+                "HardwareVersion": "V1.0",
+                "SoftwareVersion": "V2.0.0",
+                "X_Customer_MACAddress": "00:11:22:33:44:55",
+                "TrueVendorID": "EXAMPLEVENDOR",
+                "AccessType": "Gpon",
+                "Product_ID": "EXAMPLE-ROUTER-X1"
+              },
+              "admin_web_account": {
+                "username": "admin",
+                "password": {
+                  "raw": "ExampleAdminPass!",
+                  "recovered": "ExampleAdminPass!"
+                }
+              },
+              "user_gui_account": {
+                "username": "user",
+                "password": {
+                  "raw": "ExampleUserPass!",
+                  "recovered": "ExampleUserPass!"
+                }
+              },
+              "service_accounts": {
+                "FtpUserName": "ftpuser",
+                "FtpPassword": {
+                  "raw": "ExampleFtpPass!",
+                  "recovered": "ExampleFtpPass!"
+                }
+              },
+              "tr069_acs": {
+                "URL": "https://acs.example.invalid:7547/",
+                "Username": "acs_user",
+                "Password": {
+                  "raw": "acs_example_pass",
+                  "recovered": "acs_example_pass"
+                },
+                "PeriodicInformEnable": "1",
+                "PeriodicInformInterval": "300",
+                "ConnectionRequestUsername": "cr_user",
+                "ConnectionRequestPassword": {
+                  "raw": "cr_example_pass",
+                  "recovered": "cr_example_pass"
+                },
+                "X_Customer_EnableCWMP": "1",
+                "X_Customer_ConnectionRequestPort": "7547",
+                "X_Customer_EnableCWMPWanAcl": "0",
+                "X_Customer_ACL_IpAndMask": ""
+              },
+              "wifi": [
+                {
+                  "SSID": "ExampleWiFi",
+                  "Enable": "1",
+                  "BeaconType": "11i",
+                  "WPAAuthenticationMode": "PSKAuthentication",
+                  "IEEE11iEncryptionModes": "AESEncryption",
+                  "WlKey": {
+                    "raw": "ExampleWifiKey123",
+                    "recovered": "ExampleWifiKey123"
+                  },
+                  "PreSharedKeys": [
+                    {
+                      "raw": "\n          <PreSharedKey>ExampleWifiKey123",
+                      "recovered": "\n          <PreSharedKey>ExampleWifiKey123"
+                    }
+                  ]
+                },
+                {
+                  "SSID": "GuestNetwork",
+                  "Enable": "0"
+                }
+              ],
+              "wan_connections": [
+                {
+                  "type": "WANPPPConnection",
+                  "Username": "pppoe_user@example.invalid",
+                  "Password": {
+                    "raw": "pppoe_example_pass",
+                    "recovered": "pppoe_example_pass"
+                  },
+                  "ExternalIPAddress": "203.0.113.10",
+                  "DefaultGateway": "203.0.113.1",
+                  "DNSServers": "198.51.100.53,198.51.100.54",
+                  "MACAddress": "00:11:22:33:44:55",
+                  "X_Customer_ServiceList": "INTERNET",
+                  "Name": "INTERNET_EXAMPLE",
+                  "Enable": "1",
+                  "ConnectionType": "IP_Routed",
+                  "NATEnabled": "1",
+                  "AddressingType": "PPPoE"
+                }
+              ],
+              "lan": [
+                {
+                  "DHCPServerEnable": "1",
+                  "MinAddress": "192.168.0.100",
+                  "MaxAddress": "192.168.0.200",
+                  "SubnetMask": "255.255.255.0",
+                  "LAN_IP": "192.168.0.1"
+                }
+              ],
+              "all_credential_like_fields_found": [
+                {
+                  "tag": "Password",
+                  "value": {
+                    "raw": "ExampleAdminPass!",
+                    "recovered": "ExampleAdminPass!"
+                  }
+                },
+                {
+                  "tag": "Password",
+                  "value": {
+                    "raw": "acs_example_pass",
+                    "recovered": "acs_example_pass"
+                  }
+                },
+                {
+                  "tag": "ConnectionRequestPassword",
+                  "value": {
+                    "raw": "cr_example_pass",
+                    "recovered": "cr_example_pass"
+                  }
+                },
+                {
+                  "tag": "UserPassword",
+                  "value": {
+                    "raw": "ExampleUserPass!",
+                    "recovered": "ExampleUserPass!"
+                  }
+                },
+                {
+                  "tag": "FtpPassword",
+                  "value": {
+                    "raw": "ExampleFtpPass!",
+                    "recovered": "ExampleFtpPass!"
+                  }
+                },
+                {
+                  "tag": "WlKey",
+                  "value": {
+                    "raw": "ExampleWifiKey123",
+                    "recovered": "ExampleWifiKey123"
+                  }
+                },
+                {
+                  "tag": "PreSharedKey",
+                  "value": {
+                    "raw": "\n          <PreSharedKey>ExampleWifiKey123",
+                    "recovered": "\n          <PreSharedKey>ExampleWifiKey123"
+                  }
+                },
+                {
+                  "tag": "Password",
+                  "value": {
+                    "raw": "pppoe_example_pass",
+                    "recovered": "pppoe_example_pass"
+                  }
+                }
+              ]
+            },
+            "sample_head": "<?xml version=\"1.0\"?>\n<DslCpeConfig version=\"3.0\">\n  <InternetGatewayDevice>\n    <DeviceInfo>\n      <ManufacturerOUI>001122</ManufacturerOUI>\n      <SerialNumber>EXAMPLE123456</SerialNumber>\n      <DeviceSerialNumber>EXAMPLE123456</DeviceSerialNumber>\n      <ProductClass>EXAMPLE-ROUTER-X1</ProductCl"
+          }
+        }
+      ],
+      "vulnerable_indicators": true,
+      "consolidated_extracted": {
+        "device_info": {
+          "ManufacturerOUI": "001122",
+          "ProductClass": "EXAMPLE-ROUTER-X1",
+          "SerialNumber": "EXAMPLE123456",
+          "DeviceSerialNumber": "EXAMPLE123456",
+          "HardwareVersion": "V1.0",
+          "SoftwareVersion": "V2.0.0",
+          "X_Customer_MACAddress": "00:11:22:33:44:55",
+          "TrueVendorID": "EXAMPLEVENDOR",
+          "AccessType": "Gpon",
+          "Product_ID": "EXAMPLE-ROUTER-X1"
+        },
+        "admin_web_account": {
+          "username": "admin",
+          "password": {
+            "raw": "ExampleAdminPass!",
+            "recovered": "ExampleAdminPass!"
+          }
+        },
+        "user_gui_account": {
+          "username": "user",
+          "password": {
+            "raw": "ExampleUserPass!",
+            "recovered": "ExampleUserPass!"
+          }
+        },
+        "service_accounts": {
+          "FtpUserName": "ftpuser",
+          "FtpPassword": {
+            "raw": "ExampleFtpPass!",
+            "recovered": "ExampleFtpPass!"
+          }
+        },
+        "tr069_acs": {
+          "URL": "https://acs.example.invalid:7547/",
+          "Username": "acs_user",
+          "Password": {
+            "raw": "acs_example_pass",
+            "recovered": "acs_example_pass"
+          },
+          "PeriodicInformEnable": "1",
+          "PeriodicInformInterval": "300",
+          "ConnectionRequestUsername": "cr_user",
+          "ConnectionRequestPassword": {
+            "raw": "cr_example_pass",
+            "recovered": "cr_example_pass"
+          },
+          "X_Customer_EnableCWMP": "1",
+          "X_Customer_ConnectionRequestPort": "7547",
+          "X_Customer_EnableCWMPWanAcl": "0",
+          "X_Customer_ACL_IpAndMask": ""
+        },
+        "wifi": [
+          {
+            "SSID": "ExampleWiFi",
+            "Enable": "1",
+            "BeaconType": "11i",
+            "WPAAuthenticationMode": "PSKAuthentication",
+            "IEEE11iEncryptionModes": "AESEncryption",
+            "WlKey": {
+              "raw": "ExampleWifiKey123",
+              "recovered": "ExampleWifiKey123"
+            },
+            "PreSharedKeys": [
+              {
+                "raw": "\n          <PreSharedKey>ExampleWifiKey123",
+                "recovered": "\n          <PreSharedKey>ExampleWifiKey123"
+              }
+            ]
+          },
+          {
+            "SSID": "GuestNetwork",
+            "Enable": "0"
+          }
+        ],
+        "wan_connections": [
+          {
+            "type": "WANPPPConnection",
+            "Username": "pppoe_user@example.invalid",
+            "Password": {
+              "raw": "pppoe_example_pass",
+              "recovered": "pppoe_example_pass"
+            },
+            "ExternalIPAddress": "203.0.113.10",
+            "DefaultGateway": "203.0.113.1",
+            "DNSServers": "198.51.100.53,198.51.100.54",
+            "MACAddress": "00:11:22:33:44:55",
+            "X_Customer_ServiceList": "INTERNET",
+            "Name": "INTERNET_EXAMPLE",
+            "Enable": "1",
+            "ConnectionType": "IP_Routed",
+            "NATEnabled": "1",
+            "AddressingType": "PPPoE"
+          }
+        ],
+        "lan": [
+          {
+            "DHCPServerEnable": "1",
+            "MinAddress": "192.168.0.100",
+            "MaxAddress": "192.168.0.200",
+            "SubnetMask": "255.255.255.0",
+            "LAN_IP": "192.168.0.1"
+          }
+        ],
+        "all_credential_like_fields_found": [
+          {
+            "tag": "Password",
+            "value": {
+              "raw": "ExampleAdminPass!",
+              "recovered": "ExampleAdminPass!"
+            }
+          },
+          {
+            "tag": "Password",
+            "value": {
+              "raw": "acs_example_pass",
+              "recovered": "acs_example_pass"
+            }
+          },
+          {
+            "tag": "ConnectionRequestPassword",
+            "value": {
+              "raw": "cr_example_pass",
+              "recovered": "cr_example_pass"
+            }
+          },
+          {
+            "tag": "UserPassword",
+            "value": {
+              "raw": "ExampleUserPass!",
+              "recovered": "ExampleUserPass!"
+            }
+          },
+          {
+            "tag": "FtpPassword",
+            "value": {
+              "raw": "ExampleFtpPass!",
+              "recovered": "ExampleFtpPass!"
+            }
+          },
+          {
+            "tag": "WlKey",
+            "value": {
+              "raw": "ExampleWifiKey123",
+              "recovered": "ExampleWifiKey123"
+            }
+          },
+          {
+            "tag": "PreSharedKey",
+            "value": {
+              "raw": "\n          <PreSharedKey>ExampleWifiKey123",
+              "recovered": "\n          <PreSharedKey>ExampleWifiKey123"
+            }
+          },
+          {
+            "tag": "Password",
+            "value": {
+              "raw": "pppoe_example_pass",
+              "recovered": "pppoe_example_pass"
+            }
+          }
+        ]
+      },
+      "summary": "Offline analysis of provided config file (for authorized review).",
+      "access_condition": "Offline file analysis (no network request).",
+      "risk_assessment": {
+        "impact_assessment": "high",
+        "potential_impacts": [
+          "Administrative account material exposed — may enable full device management access if reused/valid.",
+          "Wireless network credentials/keys exposed — may enable unauthorized network access and traffic visibility.",
+          "Remote management (TR-069/ACS/CWMP) details exposed — may increase risk of remote provisioning abuse depending on reachability and controls.",
+          "WAN/PPPoE/service details exposed — may aid service abuse, impersonation, or targeted attacks.",
+          "Additional user/service account material exposed."
+        ],
+        "factors": [
+          "Reachability matters: LAN/Wi-Fi exposure differs from internet/WAN exposure.",
+          "No authentication required for the exposed endpoint increases risk when reachable.",
+          "Router/gateway compromise can have downstream impact on connected devices and traffic.",
+          "Actual impact depends on credential validity, service exposure, and mitigations — assess in your environment."
+        ],
+        "note": "This tool reports observed exposure and indicators; it does not assign a definitive severity/CVSS score."
+      }
+    }
+  ]
+}
