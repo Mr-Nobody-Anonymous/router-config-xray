@@ -38,15 +38,30 @@ python3 router_config_xray.py --demo
 
 You'll see a colorized banner, a per-endpoint verdict, parsed sections (device, accounts, Wi-Fi, TR-069, WAN, LAN), an informational **exposure score**, and a session summary. Try `python3 router_config_xray.py --demo --no-color` in a pipe, or `--redact` to mask secrets.
 
-## Install
+## Install & run (60 seconds)
 
-Python 3.8+, standard library only. No `pip install` needed.
+Python 3.8+, standard library only — nothing to download except the repo.
 
 ```bash
+# 1. clone
 git clone https://github.com/Mr-Nobody-Anonymous/router-config-xray.git
 cd router-config-xray
+
+# 2. verify it works (no network, fictional data)
+python3 router_config_xray.py --demo
+
+# 3. see all options
 python3 router_config_xray.py --help
 ```
+
+Optional: install a `router-config-xray` command in a local virtualenv (works on Kali/Debian too):
+
+```bash
+make install                         # creates .venv/ — no dependencies downloaded
+.venv/bin/router-config-xray --demo
+```
+
+If `--demo` shows the banner and a verdict, your install is good.
 
 ## Usage
 
@@ -75,7 +90,11 @@ python3 router_config_xray.py --self-test
 make test
 ```
 
-**Exit codes:** `0` = no clear indicators, `2` = indicators detected, `1` = usage/input error.
+**Exit codes:** `0` = no clear indicators, `2` = indicators detected, `1` = usage/input error, `130` = interrupted.
+
+**Input errors are friendly** — a missing file, empty targets list, or invalid `--timeout` / `--concurrency` prints `error: ...` instead of a Python traceback.
+
+**Redirects:** the scanner reports a 3xx response but never follows it, so every request stays on the host you authorized.
 
 ## Features
 

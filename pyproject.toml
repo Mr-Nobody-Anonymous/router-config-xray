@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "router-config-xray"
+version = "2.1.0"
+description = "Read-only exposure scanner for router/CPE config dumps (authorized testing only)"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [{ name = "Mr-Nobody-Anonymous" }]
+keywords = ["security", "router", "read-only", "tr-069", "authorized-testing"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security",
+]
+dependencies = []
+
+[project.scripts]
+router-config-xray = "router_config_xray:main"
+
+[tool.setuptools]
+py-modules = ["router_config_xray"]

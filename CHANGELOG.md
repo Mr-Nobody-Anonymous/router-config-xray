@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented here.
 
+## [2.1.0] - 2026-11-19
+
+### Added
+- `pyproject.toml` and `make install`: one-command install into a local `.venv` that provides a `router-config-xray` command (works under PEP 668 / Kali / Debian).
+- Friendly, traceback-free errors for missing files, empty target lists, and invalid `--timeout` / `--concurrency`; exit code `130` on interrupt.
+- Redirects are now reported but never followed, keeping every request on the authorized host.
+
+### Fixed
+- The `fetch()` docstring claimed redirects were not followed; the behavior now matches.
+
+### Tests
+- 22 unit tests (+5 new) covering clean CLI errors and local redirect handling.
+
 ## [2.0.0] - 2026-11-19
 
 ### Added

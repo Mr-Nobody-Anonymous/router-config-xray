@@ -146,6 +146,46 @@ class CliTest(unittest.TestCase):
     def test_list_paths(self):
         self.assertEqual(xray.main(["--list-paths"]), xray.EXIT_CLEAN)
 
+    def test_missing_file_is_a_clean_error(self):
+        self.assertEqual(xray.main(["--file", "/no/such/config.xml"]), xray.EXIT_ERROR)
+
+    def test_invalid_concurrency_is_a_clean_error(self):
+        self.assertEqual(xray.main(["--demo", "--concurrency", "0"]), xray.EXIT_ERROR)
+
+    def test_invalid_timeout_is_a_clean_error(self):
+        self.assertEqual(xray.main(["--demo", "--timeout", "-1"]), xray.EXIT_ERROR)
+
+    def test_no_arguments_is_a_clean_error(self):
+        self.assertEqual(xray.main([]), xray.EXIT_ERROR)
+
+    def test_redirect_is_not_followed(self):
+        import http.server
+        import threading
+
+        class Redirect(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(302)
+                self.send_header("Location", "/config.xml")
+                self.end_headers()
+
+            def log_message(self, *_args):
+                pass
+
+        server = http.server.HTTPServer(("127.0.0.1", 0), Redirect)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            port = server.server_address[1]
+            status, _headers, _body, error = xray.fetch(
+                f"http://127.0.0.1:{port}/start", 2.0, "test-agent")
+            # 3xx is reported, never followed to another host
+            self.assertEqual(status, 302)
+            self.assertTrue(error is None or error.startswith("HTTPError:"))
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

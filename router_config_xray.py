@@ -44,7 +44,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 TOOL_NAME = "router-config-xray"
 
 # ---------------------------------------------------------------------------
@@ -302,11 +302,19 @@ def represent_secret(raw: Any) -> Dict[str, Any]:
     return out
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """Do not follow redirects - keep every request on the authorized host."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
 def fetch(url: str, timeout: float, user_agent: str) -> Tuple[Optional[int], Dict[str, str], bytes, Optional[str]]:
-    """One read-only GET. Never follows redirects to a different host by default."""
+    """One read-only GET on the given host. Redirects are reported, never followed."""
     request = urllib.request.Request(url, headers={"User-Agent": user_agent, "Accept": "*/*"})
+    opener = urllib.request.build_opener(_NoRedirect)
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with opener.open(request, timeout=timeout) as response:
             body = response.read(5_000_000)
             headers = {key: value for key, value in response.headers.items()}
             return response.status, headers, body, None
@@ -1133,9 +1141,16 @@ def load_paths(args: argparse.Namespace) -> List[str]:
     return list(dict.fromkeys(paths))
 
 
-def main(argv: Optional[List[str]] = None) -> int:
-    args = parse_args(argv)
+def _run(args: argparse.Namespace) -> int:
+    """Execute a parsed command. Callers must handle unexpected I/O errors."""
     started = time.monotonic()
+
+    if args.timeout <= 0:
+        print("error: --timeout must be greater than 0", file=sys.stderr)
+        return EXIT_ERROR
+    if args.concurrency < 1:
+        print("error: --concurrency must be at least 1", file=sys.stderr)
+        return EXIT_ERROR
 
     if args.self_test:
         return self_test()
@@ -1228,6 +1243,19 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(c(f"  {label} report: {path}", "dim", use_color))
 
     return EXIT_FINDINGS if any(r.get("vulnerable_indicators") for r in results) else EXIT_CLEAN
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    """CLI entry point with friendly, traceback-free error handling."""
+    args = parse_args(argv)
+    try:
+        return _run(args)
+    except KeyboardInterrupt:
+        print("\ninterrupted", file=sys.stderr)
+        return 130
+    except (OSError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return EXIT_ERROR
 
 
 if __name__ == "__main__":

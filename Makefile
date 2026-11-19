@@ -1,6 +1,11 @@
-.PHONY: test lint demo clean help
+.PHONY: test lint selftest demo install clean help
 
 PYTHON ?= python3
+
+install: ## Create .venv/ and install the router-config-xray command there
+	$(PYTHON) -m venv .venv
+	.venv/bin/pip install -e .
+	@echo "Run with: .venv/bin/router-config-xray --demo"
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-10s\033[0m %s\n", $$1, $$2}'
