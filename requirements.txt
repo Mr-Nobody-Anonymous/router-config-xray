@@ -1,0 +1,2 @@
+# router-config-xray has no third-party dependencies.
+# Requires Python 3.8+ (standard library only).

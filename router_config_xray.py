@@ -33,7 +33,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 TOOL_NAME = "router-config-xray"
 
 # Primary/commonly observed exposed endpoint on compatible CPEs
@@ -54,12 +54,21 @@ COMPAT_NOTES = [
 ]
 
 BANNER = r"""
-╔══════════════════════════════════════════════════════════════╗
-║                 router-config-xray  v{ver:<5}                ║
-║     Read-only scanner for exposed router/CPE config dumps    ║
-║           Authorized testing & defensive auditing            ║
-╚══════════════════════════════════════════════════════════════╝
+  █▀█ █▀█ █░█ ▀█▀ █▀▀ █▀█   █▀▀ █▀█ █▄░█ █▀▀ █ █▀▀   ▀▄▀ █▀█ █▀█ █▄█
+  █▀▄ █▄█ █▄█ ░█░ ██▄ █▀▄   █▄▄ █▄█ █░▀█ █▀░ █ █▄█   █░█ █▀▄ █▀█ ░█░
+  v{ver}  ·  read-only exposure scanner for router/CPE config dumps
+  authorized testing & defensive auditing only
 """.format(ver=VERSION)
+
+VERDICT_STYLE = {
+    "LIKELY_EXPOSED_UNAUTH_CONFIG": ("red", "bold", "⚠  EXPOSED (UNAUTH CONFIG)", "HIGH-SIGNAL"),
+    "POSSIBLE_SENSITIVE_DISCLOSURE": ("yellow", "bold", "⚠  POSSIBLE SENSITIVE DISCLOSURE", "REVIEW"),
+    "LIKELY_EXPOSED_CONFIG": ("yellow", "bold", "⚠  LIKELY EXPOSED CONFIG", "REVIEW"),
+    "ACCESSIBLE_BUT_NO_CLEAR_SECRETS_DETECTED": ("cyan", "", "●  ACCESSIBLE (NO CLEAR SECRETS)", "INFO"),
+    "PROTECTED_OR_FORBIDDEN": ("green", "", "✓  PROTECTED / FORBIDDEN", "OK"),
+    "NOT_FOUND": ("dim", "", "○  NOT FOUND", "OK"),
+    "INCONCLUSIVE": ("yellow", "", "?  INCONCLUSIVE", "CHECK"),
+}
 
 
 def utc_now() -> str:
@@ -73,12 +82,19 @@ def normalize_target(t: str) -> str:
     return t.rstrip("/")
 
 
-def c(text: str, color: str, enable: bool = True) -> str:
+def c(text: str, color: str, enable: bool = True, bold: bool = False) -> str:
     if not enable:
         return text
-    codes = {"red": "31", "green": "32", "yellow": "33", "blue": "34", "magenta": "35", "cyan": "36", "bold": "1", "dim": "2"}
-    code = codes.get(color, "0")
-    return f"\033[{code}m{text}\033[0m"
+    codes = {"red": "31", "green": "32", "yellow": "33", "blue": "34", "magenta": "35", "cyan": "36", "white": "37", "bold": "1", "dim": "2"}
+    parts = []
+    if bold:
+        parts.append("1")
+    code = codes.get(color)
+    if code and code != "1":
+        parts.append(code)
+    if not parts:
+        return text
+    return f"\033[{';'.join(parts)}m{text}\033[0m"
 
 
 def sanitize_xml_bytes(b: bytes) -> bytes:
@@ -575,82 +591,142 @@ def fmt_secret(v: Any) -> str:
     return str(v)
 
 
+def _badge(verdict: str, color: bool) -> str:
+    st = VERDICT_STYLE.get(verdict, ("white", "", verdict, ""))
+    vcolor, bold, label, _ = st
+    return c(label, vcolor, color, bold=bool(bold))
+
+
 def pretty_print(report: Dict[str, Any], color: bool = True) -> None:
     if not report.get("quiet_banner"):
-        print(c(BANNER, "cyan", color))
-    for r in report.get("results", []):
+        print(c(BANNER, "cyan", color, bold=True))
+        mode = report.get("mode", "read-only")
+        print(c(f"  mode: {mode}", "dim", color))
+        print(c("  " + "─" * 68, "dim", color))
+
+    results = report.get("results", [])
+    for idx, r in enumerate(results, 1):
         vind = r.get("vulnerable_indicators")
-        head = f"Target: {r['target']}  (checked {r['checked_at_utc']} UTC)"
-        print(c(head, "bold", color))
-        print(c("-" * 72, "dim", color))
+        status_icon = "⚠" if vind else "✓"
+        status_color = "red" if vind else "green"
+        head = f"{status_icon} TARGET {idx}/{len(results)}: {r['target']}"
+        print("\n" + c(head, status_color, color, bold=True))
+        print(c(f"  checked: {r['checked_at_utc']} UTC", "dim", color))
+        print(c("  " + "━" * 70, "dim", color))
+
+        # paths / verdicts
         for p in r.get("paths", []):
             verdict = p.get("verdict", "")
-            vcolor = "red" if "EXPOSED" in verdict or "DISCLOSURE" in verdict else ("yellow" if verdict == "INCONCLUSIVE" else "green")
-            print(f"  [PATH] {p['url']}")
-            print(f"    status={p.get('status')}  verdict={c(verdict, vcolor, color)}  server={p.get('server')}")
+            print(f"  {c('┌', 'dim', color)} {c(p['url'], 'white', color, bold=True)}")
+            print(f"  {c('├', 'dim', color)} verdict : {_badge(verdict, color)}")
+            print(f"  {c('├', 'dim', color)} status  : {p.get('status')}   server: {p.get('server')}")
             if p.get("error"):
-                print(f"    error={p.get('error')}")
+                print(f"  {c('├', 'dim', color)} error   : {c(str(p.get('error')), 'yellow', color)}")
             a = p.get("analysis") or {}
             if a:
-                print(f"    bytes={a.get('bytes')}  markers={a.get('config_markers')}  sensitive_hits={a.get('sensitive_hits')}")
+                hits = a.get('sensitive_hits', 0)
+                hit_color = "red" if hits else "green"
+                print(f"  {c('├', 'dim', color)} signals : bytes={a.get('bytes')}  markers={a.get('config_markers')}  sensitive_hits={c(str(hits), hit_color, color, bold=bool(hits))}")
+                hints = a.get("fingerprint_hints") or []
+                if hints:
+                    print(f"  {c('├', 'dim', color)} hints   :")
+                    for h in hints[:8]:
+                        print(f"  {c('│', 'dim', color)}   • {h}")
+            print(f"  {c('└', 'dim', color)}")
 
         ex = r.get("consolidated_extracted") or {}
-        def sec(title):
-            print("\n" + c(f"[{title}]", "magenta", color))
+
+        def sec(icon: str, title: str, sec_color: str = "magenta"):
+            print("\n  " + c(f"{icon} {title}", sec_color, color, bold=True))
+            print("  " + c("·" * 46, "dim", color))
+
+        def kv(k, v, indent=4):
+            pad = " " * indent
+            print(f"{pad}{c(str(k)+':', 'cyan', color)} {v}")
+
         if ex.get("device_info"):
-            sec("DEVICE INFO")
-            for k, v in ex["device_info"].items(): print(f"  {k}: {v}")
+            sec("🖥", "DEVICE INFO")
+            for k, v in ex["device_info"].items():
+                kv(k, v)
+
         if ex.get("admin_web_account"):
-            sec("ADMIN / WEB ACCOUNT")
+            sec("🔑", "ADMIN / WEB ACCOUNT", "red")
             adm = ex["admin_web_account"]
-            print(f"  username: {adm.get('username')}")
-            if adm.get("password") is not None: print(f"  password: {fmt_secret(adm['password'])}")
+            kv("username", adm.get('username'))
+            if adm.get("password") is not None:
+                kv("password", fmt_secret(adm['password']))
+
         if ex.get("user_gui_account"):
-            sec("USER GUI ACCOUNT")
+            sec("👤", "USER GUI ACCOUNT", "yellow")
             ua = ex["user_gui_account"]
-            print(f"  username: {ua.get('username')}")
-            if ua.get("password") is not None: print(f"  password: {fmt_secret(ua['password'])}")
+            kv("username", ua.get('username'))
+            if ua.get("password") is not None:
+                kv("password", fmt_secret(ua['password']))
+
         if ex.get("service_accounts"):
-            sec("SERVICE ACCOUNTS")
-            for k, v in ex["service_accounts"].items(): print(f"  {k}: {fmt_secret(v)}")
+            sec("🛠", "SERVICE ACCOUNTS", "yellow")
+            for k, v in ex["service_accounts"].items():
+                kv(k, fmt_secret(v))
+
         if ex.get("wifi"):
-            sec("WIFI / WLAN")
+            sec("📶", "WIFI / WLAN", "blue")
             for i, w in enumerate(ex["wifi"], 1):
-                if not (w.get("SSID") or w.get("WlKey") or w.get("PreSharedKeys")): continue
-                print(f"  - #{i} SSID={w.get('SSID')} Enable={w.get('Enable')} BeaconType={w.get('BeaconType')} Auth={w.get('WPAAuthenticationMode')} Cipher={w.get('IEEE11iEncryptionModes')}")
-                if w.get("WlKey"): print(f"      WlKey: {fmt_secret(w['WlKey'])}")
-                for idx, psk in enumerate(w.get("PreSharedKeys", []), 1): print(f"      PreSharedKey[{idx}]: {fmt_secret(psk)}")
+                if not (w.get("SSID") or w.get("WlKey") or w.get("PreSharedKeys")):
+                    continue
+                ssid = w.get('SSID') or '(hidden/unknown)'
+                en = w.get('Enable')
+                state = c("ENABLED", "green", color, bold=True) if str(en) == "1" else c(f"DISABLED({en})", "dim", color)
+                print(f"    {c('▸', 'blue', color)} #{i} SSID={c(str(ssid), 'white', color, bold=True)}  {state}")
+                print(f"      Beacon={w.get('BeaconType')}  Auth={w.get('WPAAuthenticationMode')}  Cipher={w.get('IEEE11iEncryptionModes')}")
+                if w.get("WlKey"):
+                    print(f"      WlKey: {c(fmt_secret(w['WlKey']), 'yellow', color)}")
+                for j, psk in enumerate(w.get("PreSharedKeys", []), 1):
+                    print(f"      PreSharedKey[{j}]: {c(fmt_secret(psk), 'yellow', color)}")
+
         if ex.get("tr069_acs"):
-            sec("TR-069 / ACS / CWMP")
-            for k, v in ex["tr069_acs"].items(): print(f"  {k}: {fmt_secret(v)}")
+            sec("📡", "TR-069 / ACS / CWMP", "yellow")
+            for k, v in ex["tr069_acs"].items():
+                kv(k, fmt_secret(v))
+
         if ex.get("wan_connections"):
-            sec("WAN / PPPoE / IP CONNECTIONS")
+            sec("🌐", "WAN / PPPoE / IP CONNECTIONS", "blue")
             for i, w in enumerate(ex["wan_connections"], 1):
-                print(f"  - #{i} {w.get('type')} Service={w.get('X_Customer_ServiceList')} Name={w.get('Name')} Enable={w.get('Enable')}")
-                for k in ["Username","Password","ExternalIPAddress","DefaultGateway","DNSServers","MACAddress","X_Customer_VLANID","NATEnabled","AddressingType","X_Customer_ConnectionType"]:
-                    if k in w: print(f"      {k}: {fmt_secret(w[k])}")
+                label = f"#{i} {w.get('type')}  service={w.get('X_Customer_ServiceList')}  name={w.get('Name')}  enable={w.get('Enable')}"
+                print(f"    {c('▸', 'blue', color)} {label}")
+                for k in ["Username", "Password", "ExternalIPAddress", "DefaultGateway", "DNSServers", "MACAddress", "X_Customer_VLANID", "NATEnabled", "AddressingType", "X_Customer_ConnectionType"]:
+                    if k in w:
+                        print(f"      {k}: {fmt_secret(w[k])}")
+
         if ex.get("lan"):
-            sec("LAN")
-            for l in ex["lan"]: print(f"  - {l}")
+            sec("🏠", "LAN")
+            for l in ex["lan"]:
+                print(f"    - {l}")
 
         if r.get("risk_assessment"):
             ra = r["risk_assessment"]
-            sec("IMPACT ASSESSMENT (informational, not a definitive score)")
-            print(f"  Impact level (heuristic): {ra.get('impact_assessment')}")
-            for imp in ra.get("potential_impacts", []): print(f"  - {imp}")
-            print("  Factors:")
-            for f in ra.get("factors", []): print(f"    * {f}")
-            print(f"  Note: {ra.get('note')}")
+            sec("⚡", "IMPACT ASSESSMENT (informational, not a definitive score)", "yellow")
+            kv("Impact level (heuristic)", ra.get("impact_assessment"))
+            for imp in ra.get("potential_impacts", []):
+                print(f"    • {imp}")
+            print(f"    {c('Factors:', 'cyan', color)}")
+            for f in ra.get("factors", []):
+                print(f"      - {f}")
+            print(f"    {c('Note:', 'dim', color)} {ra.get('note')}")
 
-        print("\n" + c("[ACCESS CONDITION]", "magenta", color))
-        print(f"  {r.get('access_condition')}")
-        print("\n" + c("[COMPATIBILITY NOTES]", "magenta", color))
+        sec("🔓", "ACCESS CONDITION", "cyan")
+        print(f"    {r.get('access_condition')}")
+        sec("🧩", "COMPATIBILITY NOTES", "cyan")
         for note in COMPAT_NOTES:
-            print(f"  - {note}")
-        summ_color = "red" if vind else "green"
-        print("\n" + c("SUMMARY: " + r["summary"], summ_color, color))
+            print(f"    • {note}")
+
+        # final summary line/box
+        box_color = "red" if vind else "green"
+        summary_label = "INDICATORS DETECTED" if vind else "NO CLEAR INDICATORS"
+        print("\n  " + c("┏" + "━" * 68 + "┓", box_color, color))
+        print("  " + c("┃ ", box_color, color) + c(f"{summary_label}: ", box_color, color, bold=True) + r["summary"])
+        print("  " + c("┗" + "━" * 68 + "┛", box_color, color))
         if report.get("redacted"):
-            print(c("  (report values redacted for sharing)", "dim", color))
+            print(c("    (report values redacted for sharing)", "dim", color))
         print()
 
 

@@ -1,6 +1,6 @@
 # router-config-xray report
 
-- Generated: 2026-11-19T13:34:16Z UTC
+- Generated: 2026-11-19T15:55:47Z UTC
 - Mode: read-only (no login, no state changes, no persistence/backdoor, no firmware flashing)
 
 ## Target: file:///home/anonymous/router-config-xray/samples/decoy_config.xml

@@ -1,180 +1,176 @@
 # 🔎 router-config-xray
 
-**See what an exposed router config reveals — safely, read-only, and with evidence.**
+**X-ray vision for exposed router configs — read-only, evidence-ready, and built for authorized testing.**
 
-`router-config-xray` is a read-only scanner for **unauthenticated router/CPE configuration and backup endpoints** (like `/config.xml`). It checks whether a config export is reachable without login, parses the dump, and presents what’s inside in a clear, audit-friendly way — **without brute force, without logging in, and without changing anything on the target**.
-
-> ⚠️ **Works on specific routers/profiles (not universal):** primarily built and observed on **SCTY TG2212-class GPON gateway/CPE** devices with a `ty_httpd`-style web interface exposing unauthenticated **`/config.xml`** in **`DslCpeConfig`** (TR-069/CWMP-style XML) format. Detection may help on similar devices, but extraction/coverage is profile-dependent. See [Compatibility](#compatibility-specific-routers--profiles-important).
->
-> **Authorized use only.** Run this tool only on devices/networks you own or have explicit written permission to test.
+`router-config-xray` finds and parses **unauthenticated router/CPE configuration & backup endpoints** (like `/config.xml`) and shows exactly what they leak — **without logging in, brute forcing, or changing anything**.
 
 ![mode: read-only](https://img.shields.io/badge/mode-read--only-2ea44f)
-![python](https://img.shields.io/badge/python-3.8%2B-blue)
+![python](https://img.shields.io/badge/python-3.8%2B%20(stdlib)-blue)
 ![reports](https://img.shields.io/badge/reports-terminal%20%7C%20JSON%20%7C%20HTML%20%7C%20Markdown-6f42c1)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey)
+
+> ⚠️ **Works on specific routers/profiles (not universal):** primarily built and observed on **SCTY TG2212-class GPON gateway/CPE** devices with a `ty_httpd`-style web interface exposing unauthenticated **`/config.xml`** in **`DslCpeConfig`** (TR-069/CWMP-style XML) format. It can also probe/parse similar exposures on other devices (best-effort), but extraction and coverage depend on model/firmware. See [Compatibility](#-compatibility-specific-routers--profiles).
+>
+> ✅ **Authorized use only.** Use only on devices/networks you own or have explicit written permission to test. See [SECURITY.md](SECURITY.md).
+
+---
+
+## TL;DR
+
+```bash
+# Scan an authorized target
+python3 router_config_xray.py --target http://192.168.0.1 --all-paths
+
+# Or analyze a local dump safely (no network)
+python3 router_config_xray.py --file samples/decoy_config.xml
+
+# Save shareable evidence (redacted secrets)
+python3 router_config_xray.py --file samples/decoy_config.xml --redact --md report.md --json report.json
+```
+
+**What you get:** verdicts, fingerprint hints, extracted config (device/accounts/Wi-Fi/TR-069/WAN/LAN), decoded/recovered secret views where applicable, and an informational impact summary — in a flashy terminal UI plus report files.
 
 ---
 
 ## Why this exists
 
-During an **authorized** review of an ISP/customer-premises gateway, a full device configuration export (`/config.xml`) was found to be downloadable over HTTP **with no authentication**.
+In an **authorized** review of an ISP/customer-premises gateway, a full configuration export (`/config.xml`) was downloadable over HTTP with **no authentication**. One reachable file can expose management creds, Wi-Fi keys, remote-management (TR-069/ACS) settings, WAN/PPPoE details, and identifiers — which may lead to device/network compromise depending on reachability and validity.
 
-That single file can expose a surprising amount: management credentials, Wi-Fi keys, remote-management (TR-069/ACS) settings, WAN/PPPoE details, and device identifiers. Depending on reachability and whether those values are valid, the impact can range from privacy loss to full device and network compromise.
+`router-config-xray` demonstrates and documents that exposure class **responsibly**: read-only checks, clear parsing, and evidence reports (no login, no state changes, no persistence, no firmware flashing).
 
-`router-config-xray` was built to **detect and demonstrate this class of exposure responsibly**:
-- read-only HTTP GET checks (or offline file analysis)
-- tolerant parsing and clear extraction
-- evidence-ready reports (terminal/JSON/HTML/Markdown)
-- no login attempts, no state changes, no persistence/backdoors, no firmware flashing
+## 🎯 Compatibility (specific routers / profiles)
 
-## Compatibility: specific routers / profiles (important)
+**This tool is not a universal router scanner.** Config paths, schemas, and field names vary by vendor/model/firmware.
 
-This tool **does not work the same on every router**. Config endpoints, formats, and field names vary widely by vendor, model, and firmware.
+### Primary observed/tested profile
+Built and tuned against an authorized case with this profile:
 
-### Primary observed/tested profile (authorized testing)
-Best results and deepest field extraction were developed against a specific CPE class where unauthenticated config export was observed:
-
-- **Device class:** SCTY **TG2212-class GPON gateway/CPE** (fiber ONT/router class)
-- **Web/management interface:** `ty_httpd`-style management service
-- **Exposed endpoint:** unauthenticated `GET /config.xml` (HTTP 200)
-- **Config format:** `DslCpeConfig` (TR-069/CWMP-style XML) containing sections such as `InternetGatewayDevice`, `DeviceInfo`, `X_Customer_TeleComAccount`, `ManagementServer`, `WLANConfiguration`, `WANPPPConnection`/`WANIPConnection`, and LAN settings
-- **Observed behavior:** full configuration readable without prior authentication when the endpoint is reachable
-
-> Field names and extraction quality are tuned for this schema/profile. Other SCTY models/firmware builds or similar TR-069-style exports may parse partially or fully, but results are **not guaranteed**.
-
-### Generic detection
-The scanner can still probe common config/backup/export paths (`--all-paths`) and apply generic parsing/marker detection on **other devices**, but:
-- it may find nothing on devices that do not expose such endpoints,
-- or it may detect an accessible config without mapping every field perfectly.
-
-**Bottom line:** treat this as a targeted, read-only auditor for this exposure class — strongest on the profile above, best-effort elsewhere.
-
-## What it looks for & extracts
-
-When a readable config is found, the tool attempts to recover and display (where present):
-
-| Area | Examples of fields |
+| Detail | Observed value/class |
 |---|---|
-| **Device info** | Vendor/model/product, serials, MAC/OUI, hardware/software versions, access type |
+| **Device class** | SCTY **TG2212-class GPON gateway/CPE** (fiber ONT/router class) |
+| **Web interface** | `ty_httpd`-style management service |
+| **Exposed endpoint** | Unauthenticated `GET /config.xml` (HTTP 200) |
+| **Config format** | `DslCpeConfig` (TR-069/CWMP-style XML) |
+| **Typical sections** | `InternetGatewayDevice`, `DeviceInfo`, `X_Customer_TeleComAccount`, `ManagementServer`, `WLANConfiguration`, `WANPPPConnection`/`WANIPConnection`, LAN settings |
+| **Behavior** | Full config readable without prior authentication when reachable |
+
+> Field extraction is tuned for this schema/profile. Other SCTY models/firmware or similar TR-069 exports may parse partially or fully, but results are **not guaranteed**.
+
+### Best-effort on others
+- `--all-paths` probes common config/backup/export endpoints across router families.
+- Generic markers/parsing may detect or partially extract on other devices — but may also find nothing.
+
+## ✨ What makes it cool
+
+- **Flashy, readable terminal UI:** banner, verdict badges, colored sections, fingerprint hints, and a clear summary box (`--no-color` supported)
+- **Strictly read-only:** HTTP GET or offline file parsing only — no login, no brute force, no config changes, no persistence/backdoors, no firmware flashing
+- **Smart extraction:** tolerant XML + regex fallback, schema-aware field mapping for the target profile, and generic credential/key sweeps
+- **Secret recovery helpers:** shows recovered/raw forms with hex and common decode hints (e.g. base64 and XOR-style obfuscation seen in some CPE configs) when applicable
+- **Evidence-ready reports:** terminal + `--json`, `--html`, `--md`
+- **Share-safe mode:** `--redact` masks secret values in output/reports
+- **Flexible input:** single `--target`, `--targets-file`, or offline `--file`; `--quiet` for quick triage
+
+## 🔍 What it extracts (when present)
+
+| Area | Examples |
+|---|---|
+| **Device info** | Vendor/model/product, serials, MAC/OUI, HW/SW versions, access type |
 | **Admin/web account** | Management username/password material |
 | **User GUI account** | Limited/non-admin account details |
 | **Service accounts** | FTP/Telnet/SSH credentials (if present) |
-| **Wi-Fi/WLAN** | SSIDs, enable state, security/auth/cipher, PSKs/keys |
-| **TR-069/ACS/CWMP** | ACS URL, credentials, periodic inform, connection-request settings, enable/ACL flags (if present) |
-| **WAN/PPPoE/IP** | Usernames/passwords (with decode hints where applicable), external IP/DNS/gateway/MAC/VLAN/service details |
+| **Wi-Fi/WLAN** | SSIDs, state, security/auth/cipher, PSKs/keys |
+| **TR-069/ACS/CWMP** | ACS URL, creds, periodic inform, connection-request settings, enable/ACL flags |
+| **WAN/PPPoE/IP** | Usernames/passwords (decode hints where applicable), external IP/DNS/gateway/MAC/VLAN/service |
 | **LAN** | DHCP/interface basics |
 | **Generic sweep** | Other credential/key-like fields |
 
-It also reports **fingerprint hints**, **access conditions**, and an **informational impact assessment** (no definitive severity score).
+Outputs include **fingerprint hints**, **access conditions**, and an **informational impact assessment** (no definitive severity/CVSS score).
 
-## Cool features
+## 🚀 Quick start
 
-- 🔒 **Strictly read-only:** HTTP GET / offline parsing only — no login, no brute force, no config changes, no persistence, no firmware flashing
-- 🧩 **Specific-profile aware:** tuned for `DslCpeConfig`/TR-069-style exports like the SCTY TG2212-class `/config.xml` profile, with generic fallback
-- 🧠 **Tolerant parsing:** XML parsing with regex fallback (handles messy/control-char dumps) and schema-tolerant extraction
-- 🔐 **Secret recovery helpers:** shows recovered/raw forms with hex and common decode hints (e.g. base64 and XOR-style obfuscation seen in some CPE configs) when applicable
-- 🕵️ **Fingerprint hints:** surfaces useful indicators (server header, schema markers, vendor/model hints) to understand what you’re looking at
-- 🌐 **Path discovery:** default checks plus `--all-paths` expanded wordlist of common config/backup/export endpoints
-- 📁 **Offline mode:** `--file` to analyze a local config dump safely with zero network requests
-- 🧾 **Evidence reports:** terminal output plus `--json`, `--html`, and `--md`
-- 🙈 **Share-safe redaction:** `--redact` masks secret values in output/reports for safer sharing
-- 🎯 **Multi-target:** scan a single target or a list from file; `--quiet` for CI/triage-style summaries
-
-## Quick start
+**Requirements:** Python 3.8+ (standard library only, no external dependencies).
 
 ```bash
-# Help & version
 python3 router_config_xray.py --help
 python3 router_config_xray.py --version
+python3 router_config_xray.py --list-paths
 
-# 1) Scan a target (authorized) for common exposed config endpoints
+# 1) Authorized live scan
 python3 router_config_xray.py --target http://192.168.0.1
 
-# 2) Broader read-only path scan
+# 2) Broader read-only path probing
 python3 router_config_xray.py --target http://192.168.0.1 --all-paths
 
-# 3) Analyze a local config dump offline (safe, no network)
+# 3) Offline analysis (safe demo)
 python3 router_config_xray.py --file samples/decoy_config.xml
 
-# 4) Generate evidence reports
-python3 router_config_xray.py --file samples/decoy_config.xml \
-  --json report.json --html report.html --md report.md
+# 4) Evidence reports
+python3 router_config_xray.py --file samples/decoy_config.xml --json out.json --html out.html --md out.md
 
-# 5) Shareable (redacted) report
-python3 router_config_xray.py --file samples/decoy_config.xml --redact --md redacted.md
-
-# 6) Show built-in path wordlist
-python3 router_config_xray.py --list-paths
+# 5) Redacted/shareable output
+python3 router_config_xray.py --file samples/decoy_config.xml --redact --no-color
 ```
 
-**Exit codes:** `0` = no clear indicators found by this check, `2` = indicators detected (verify in authorized context).
+**Exit codes:** `0` = no clear indicators found, `2` = indicators detected (verify in authorized context).
 
-## Demo (fictional decoy data)
+## 🧪 Demo (fictional decoy data only)
 
-A safe, fictional sample is included at [`samples/decoy_config.xml`](samples/decoy_config.xml). Generated example reports (decoy only): [`examples/decoy_report.json`](examples/decoy_report.json), [`examples/decoy_report.html`](examples/decoy_report.html), [`examples/decoy_report.md`](examples/decoy_report.md).
+Safe demo assets included:
+- [`samples/decoy_config.xml`](samples/decoy_config.xml) — fictional config
+- [`examples/decoy_report.json`](examples/decoy_report.json), [`examples/decoy_report.html`](examples/decoy_report.html), [`examples/decoy_report.md`](examples/decoy_report.md)
 
 ```text
-╔══════════════════════════════════════════════════════════════╗
-║                 router-config-xray  v1.1.0                   ║
-║     Read-only scanner for exposed router/CPE config dumps    ║
-║           Authorized testing & defensive auditing            ║
-╚══════════════════════════════════════════════════════════════╝
+  █▀█ █▀█ █░█ ▀█▀ █▀▀ █▀█   █▀▀ █▀█ █▄░█ █▀▀ █ █▀▀   ▀▄▀ █▀█ █▀█ █▄█
+  █▀▄ █▄█ █▄█ ░█░ ██▄ █▀▄   █▄▄ █▄█ █░▀█ █▀░ █ █▄█   █░█ █▀▄ █▀█ ░█░
+  v1.2.0  ·  read-only exposure scanner for router/CPE config dumps
 
-Target: file:///.../samples/decoy_config.xml
-  [PATH] ... verdict=LIKELY_EXPOSED_CONFIG  bytes=3566  markers=14  sensitive_hits=15
-
-[DEVICE INFO]        EXAMPLEVENDOR / EXAMPLE-ROUTER-X1 / V2.0.0
-[ADMIN / WEB ACCOUNT] username: admin   password: <recovered>
-[WI-FI / WLAN]        SSID=ExampleWiFi (WPA2/PSK) key: <recovered>
-[TR-069 / ACS / CWMP] https://acs.example.invalid:7547/  interval=300
-[WAN / PPPoE]         user/endpoint/DNS details (recovered where possible)
-[IMPACT ASSESSMENT]   informational, context-dependent (no definitive score)
-SUMMARY: Potential unauthenticated sensitive config exposure detected...
+⚠ TARGET 1/1: file:///.../samples/decoy_config.xml
+  ├ verdict : ⚠  LIKELY EXPOSED CONFIG
+  ├ signals : bytes=3566  markers=14  sensitive_hits=15
+  ├ hints   : DslCpeConfig (TR-069/CWMP-style XML) · device identifiers present
+  └
+  🖥 DEVICE INFO  |  🔑 ADMIN/WEB  |  👤 USER  |  🛠 SERVICES
+  📶 WIFI/WLAN   |  📡 TR-069/ACS |  🌐 WAN   |  🏠 LAN
+  ⚡ IMPACT ASSESSMENT (informational, not a definitive score)
+  ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  ┃ INDICATORS DETECTED: Offline analysis of provided config file...   ┃
+  ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ```
 
-> All sample values above and in `samples/`/`examples/` are **fictional placeholders**.
+## How it works
 
-## How it works (high level)
+1. **Probe (read-only):** request common config/backup/export paths (or read a local file).
+2. **Detect:** evaluate HTTP status + config/secret markers (e.g. `DslCpeConfig`, TR-069 structures).
+3. **Parse & recover:** tolerant extraction with schema-aware mapping and decode hints where applicable.
+4. **Report:** present verdicts, fingerprint hints, access conditions, and informational impact with evidence outputs.
 
-1. **Target & probe (read-only):** request common config/backup/export paths (or read a local file).
-2. **Detect:** check HTTP status and config/secret markers (e.g. `DslCpeConfig`, TR-069 structures, credential/key fields).
-3. **Parse & recover:** extract structured fields with tolerant parsing and decode hints where applicable.
-4. **Report:** present findings, fingerprint hints, access conditions, and an informational impact assessment with evidence outputs.
+## Access conditions
 
-## Access conditions: does this require connecting first?
-
-- **Network reachability is required** to the device’s web interface — but **no prior authentication** is required for the exposed endpoint itself.
-  - **LAN/Wi-Fi:** if you can reach the gateway/management interface on the local network, an unauthenticated endpoint may be readable.
-  - **WAN/internet:** if the management interface/endpoint is remotely exposed, it may be reachable off-network.
-- Actual risk depends on exposure, configuration, and whether recovered values are valid/usable.
+- **Network reachability** to the device web interface is required, but **no prior authentication** is required for an exposed endpoint itself.
+- **LAN/Wi-Fi:** reachable on the local network → may be readable if exposed.
+- **WAN/internet:** remotely exposed management/endpoint → may be reachable off-network.
+- Actual risk depends on exposure, configuration, and validity/usability of recovered values.
 
 ## Impact & risk (informational — no definitive score)
 
-An unauthenticated, reachable configuration/backup export that discloses credentials or sensitive settings is a serious security weakness (often treated as broken access control / sensitive information disclosure). Depending on what is exposed and who can reach it, potential impacts include:
+An unauthenticated, reachable config/backup export disclosing credentials or sensitive settings is a serious security weakness (often broken access control / sensitive information disclosure). Potential impacts (context-dependent): device takeover, network/Wi-Fi compromise, remote-management abuse risk, service/identity exposure, availability/privacy loss.
 
-- **Device takeover:** leaked management credentials may allow full administrative access and reconfiguration.
-- **Network compromise:** changes to DNS/DHCP/routing/firewall/port-forwarding could enable interception, redirection, or exposure of internal services.
-- **Wi-Fi compromise:** exposed keys can allow unauthorized network access and traffic visibility.
-- **Remote-management risk:** TR-069/ACS details may increase risk of provisioning abuse where reachable/misconfigured.
-- **Service/identity exposure:** WAN/PPPoE and account details can aid abuse or targeted attacks.
-- **Availability/privacy loss:** misconfiguration/reset can cause outage; identifiers and topology/config details may leak.
+**This tool does not claim a CVSS or definitive severity score.** Treat outputs as observed indicators and assess risk in your environment.
 
-**No CVSS or definitive severity score is claimed by this tool.** Treat outputs as observed indicators and assess risk in your own environment/context.
+## Remediation
 
-## Remediation guidance
-
-- Remove or strictly protect config/backup/export endpoints; require strong authentication and limit access to trusted management networks.
-- Disable WAN-side management unless necessary; enforce firewall/ACL restrictions.
-- **Rotate exposed secrets** (admin/user/service passwords, Wi-Fi keys, remote-management credentials) and review for unauthorized changes.
-- Apply vendor/ISP firmware updates and hardening guidance; review TR-069/ACS exposure with your provider.
-- Monitor for unexpected configuration, DNS, forwarding, or client changes.
+- Restrict/remove unauthenticated access to config/backup/export endpoints; require strong auth and limit to trusted management networks.
+- Disable unnecessary WAN-side management; enforce firewall/ACL controls.
+- Rotate exposed secrets (admin/user/service passwords, Wi-Fi keys, remote-management creds) and review for unauthorized changes.
+- Apply vendor/ISP firmware updates/hardening; review TR-069/ACS exposure.
+- Monitor for unexpected config, DNS, forwarding, or client changes.
 
 ## Responsible use, license & security
 
-- **Authorized testing only.** See [SECURITY.md](SECURITY.md) for responsible use, handling of sensitive findings, and reporting guidance.
-- This tool is **read-only by design** and does not plant backdoors, flash firmware, or modify targets.
-- Reports may contain secrets — handle/store/share carefully (use `--redact` when appropriate). Included samples/examples use **fictional decoy data only**.
-- Licensed under the [MIT License](LICENSE).
+- **Authorized testing only.** See [SECURITY.md](SECURITY.md).
+- Read-only by design — no backdoors, no firmware flashing, no target modification.
+- Findings/reports may contain secrets: handle carefully (`--redact` for sharing). Included samples/examples are **fictional decoy data only**.
+- Licensed under [MIT](LICENSE). Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Project layout
 
@@ -182,17 +178,19 @@ An unauthenticated, reachable configuration/backup export that discloses credent
 .
 ├── router_config_xray.py      # read-only scanner/extractor
 ├── samples/
-│   └── decoy_config.xml       # fictional sample config for safe demos
+│   └── decoy_config.xml       # fictional sample config (safe demo)
 ├── examples/
-│   ├── decoy_report.json      # sample JSON report (decoy data)
-│   ├── decoy_report.html      # sample HTML report (decoy data)
-│   └── decoy_report.md        # sample Markdown report (decoy data)
-├── LICENSE
+│   ├── decoy_report.json      # sample JSON report (decoy)
+│   ├── decoy_report.html      # sample HTML report (decoy)
+│   └── decoy_report.md        # sample Markdown report (decoy)
+├── README.md
 ├── SECURITY.md
-├── .gitignore
-└── README.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── requirements.txt
+└── .gitignore
 ```
 
 ## Disclaimer
 
-Provided for educational and authorized security-auditing purposes. No warranty is provided, and no guarantee is made that all exposures will be detected. You are solely responsible for lawful, authorized use.
+Provided for educational and authorized security-auditing purposes. No warranty; no guarantee all exposures will be detected. You are responsible for lawful, authorized use.
