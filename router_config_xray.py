@@ -44,7 +44,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-VERSION = "2.1.1"
+VERSION = "2.1.2"
 TOOL_NAME = "router-config-xray"
 
 # ---------------------------------------------------------------------------

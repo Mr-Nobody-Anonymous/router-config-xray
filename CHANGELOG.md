@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## [2.1.2] - 2026-11-19
+
+### Fixed
+- **CI runner failure on setup-python:** `ubuntu-latest` now resolves to Ubuntu 26.04, which has no Python 3.8/3.9 builds in the setup-python version manifest. Pinned the job to `ubuntu-24.04`, where every matrix version (3.8-3.12) is published. Verified against the official versions manifest.
+
 ## [2.1.1] - 2026-11-19
 
 ### Fixed
