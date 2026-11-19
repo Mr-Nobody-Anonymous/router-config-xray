@@ -9,7 +9,7 @@ All notable changes to this project are documented here.
 - `--outdir`: write JSON, HTML and Markdown reports in one command.
 - `--paths-file`: combine a custom endpoint wordlist with the built-in paths.
 - `--concurrency N`: parallel read-only endpoint probing with a live TTY progress bar.
-- Heuristic **exposure score** (0-100, `INFO` → `CRITICAL`) with human-readable reasons — informational, not CVSS.
+- Heuristic **exposure score** (0-100, `INFO` to `CRITICAL`) with human-readable reasons - informational, not CVSS.
 - Session dashboard: target/endpoint/finding counts, elapsed time, top score, next steps.
 - Full unit test suite (`tests/`, 17 tests) plus built-in `--self-test`.
 - GitHub Actions CI matrix (Python 3.8 - 3.12) and `Makefile`.

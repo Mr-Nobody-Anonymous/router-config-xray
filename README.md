@@ -1,8 +1,15 @@
 <div align="center">
 
-# 🔎 router-config-xray
+```
+██╗  ██╗███████╗██████╗ ██╗   ██╗██╗      ██████╗ ██████╗ ███████╗███████╗██╗  ██╗
+╚██╗██╔╝██╔════╝██╔══██╗██║   ██║██║     ██╔═══██╗██╔══██╗██╔════╝██╔════╝╚██╗██╔╝
+ ╚███╔╝ ███████╗██████╔╝██║   ██║██║     ██║   ██║██████╔╝█████╗   ███████╗ ╚███╔╝ 
+ ██╔██╗ ██╔════╝██╔══██╗██║   ██║██║     ██║   ██║██╔══██╗██╔══╝   ╚════██║ ██╔██╗ 
+██╔╝ ██╗███████╗██║  ██║╚██████╔╝███████╗╚██████╔╝██║  ██║███████╗███████╗██╔╝ ██╗
+╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝
+```
 
-**X-ray vision for exposed router configs — read-only, evidence-ready, and built for authorized testing.**
+**X-ray vision for exposed router configs - read-only, evidence-ready, and built for authorized testing.**
 
 ![read-only](https://img.shields.io/badge/mode-read--only-2ea44f)
 ![python](https://img.shields.io/badge/python-3.8%2B-blue)
@@ -10,7 +17,7 @@
 ![reports](https://img.shields.io/badge/reports-terminal%20%7C%20JSON%20%7C%20HTML%20%7C%20Markdown-6f42c1)
 ![license](https://img.shields.io/badge/license-MIT-lightgrey)
 
-> ⚠️ Authorized use only — devices/networks you own or have explicit written permission to test.
+> [!] AUTHORIZED USE ONLY - devices/networks you own or have explicit written permission to test.
 > See [SECURITY.md](SECURITY.md).
 
 </div>
@@ -78,7 +85,7 @@ make test
 | **Parallel read-only probing** | `--concurrency N` checks many endpoints at once with a live progress bar; deterministic result ordering. |
 | **Tolerant extraction** | XML parsing with regex fallback — works even when the config is malformed or uses a vendor-specific schema. |
 | **Secret recovery hints** | Raw value plus printable view, hex, and base64/XOR-style decode hints where applicable. |
-| **Heuristic exposure score** | 0–100 score (`INFO` → `CRITICAL`) with the reasons behind it. Informational only — **not CVSS**. |
+| **Heuristic exposure score** | 0-100 score (`INFO` to `CRITICAL`) with the reasons behind it. Informational only - **not CVSS**. |
 | **Four report formats** | Terminal, `--json`, `--html` (dark themed with cards), `--md`; `--outdir` writes all three at once. |
 | **Share-safe mode** | `--redact` masks secret values everywhere, including report files. |
 | **Flexible input** | `--demo`, `--file`, `--target`, `--targets-file`, `--paths`, `--paths-file`, `--all-paths`. |
@@ -126,7 +133,7 @@ make test
 
 ```text
 .
-├── router_config_xray.py      # self-contained scanner (presentation → extraction → reporting → CLI)
+├── router_config_xray.py      # self-contained scanner (presentation -> extraction -> reporting -> CLI)
 ├── tests/
 │   └── test_router_config_xray.py   # 17 standard-library unit tests
 ├── samples/
