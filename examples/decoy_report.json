@@ -1,8 +1,8 @@
 {
   "tool": "router-config-xray",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "mode": "read-only (no login, no state changes, no persistence/backdoor, no firmware flashing)",
-  "generated_at_utc": "2026-11-19T16:50:53Z",
+  "generated_at_utc": "2026-11-19T17:04:19Z",
   "compatibility_notes": [
     "Best-effort extraction is tuned for DslCpeConfig / TR-069-style XML exports (e.g. configs exposing /config.xml).",
     "Primary observed profile (authorized testing): SCTY TG2212-class GPON CPE/ONT gateways with a ty_httpd-style web interface exposing unauthenticated /config.xml.",
@@ -17,7 +17,7 @@
   "results": [
     {
       "target": "file:///home/anonymous/router-config-xray/samples/decoy_config.xml",
-      "checked_at_utc": "2026-11-19T16:50:53Z",
+      "checked_at_utc": "2026-11-19T17:04:19Z",
       "mode": "offline-file",
       "paths": [
         {

@@ -44,7 +44,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-VERSION = "2.1.0"
+VERSION = "2.1.1"
 TOOL_NAME = "router-config-xray"
 
 # ---------------------------------------------------------------------------
@@ -321,10 +321,10 @@ def fetch(url: str, timeout: float, user_agent: str) -> Tuple[Optional[int], Dic
     except urllib.error.HTTPError as exc:
         try:
             body = exc.read(500_000)
-        except Exception:
-            body = b""
-        headers = {key: value for key, value in (exc.headers.items() if exc.headers else [])}
-        return exc.code, headers, body, f"HTTPError:{exc.code}"
+            headers = {key: value for key, value in (exc.headers.items() if exc.headers else [])}
+            return exc.code, headers, body, f"HTTPError:{exc.code}"
+        finally:
+            exc.close()
     except Exception as exc:
         return None, {}, b"", f"{type(exc).__name__}:{exc}"
 

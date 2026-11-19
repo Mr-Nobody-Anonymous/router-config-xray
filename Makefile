@@ -19,8 +19,9 @@ lint: ## Byte-compile the scanner to catch syntax errors
 selftest: ## Run built-in checks
 	$(PYTHON) router_config_xray.py --self-test
 
-demo: ## Run the safe bundled demo
-	$(PYTHON) router_config_xray.py --demo
+demo: ## Run the safe bundled demo (exit 2 = findings, which is expected)
+	@code=0; $(PYTHON) router_config_xray.py --demo || code=$$?; \
+	 if [ "$$code" -eq 0 ] || [ "$$code" -eq 2 ]; then exit 0; else exit "$$code"; fi
 
 clean: ## Remove Python bytecode caches
 	find . -type d -name __pycache__ -exec rm -rf {} +

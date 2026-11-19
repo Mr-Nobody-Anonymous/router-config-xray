@@ -5,8 +5,11 @@ Run:  python3 -m unittest discover -s tests -v
   or: python3 tests/test_router_config_xray.py
 """
 
+import contextlib
+import io
 import os
 import sys
+import tempfile
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -135,28 +138,64 @@ class ReportingTest(unittest.TestCase):
             html_file = os.path.join(directory, "r.html")
             xray.write_markdown(report, md)
             xray.write_html(report, html_file)
-            self.assertIn("router-config-xray", open(md, encoding="utf-8").read())
-            self.assertIn("<!doctype html>", open(html_file, encoding="utf-8").read())
+            with open(md, encoding="utf-8") as handle:
+                self.assertIn("router-config-xray", handle.read())
+            with open(html_file, encoding="utf-8") as handle:
+                self.assertIn("<!doctype html>", handle.read())
 
 
 class CliTest(unittest.TestCase):
+    def run_quiet(self, argv):
+        """Run the CLI capturing stdout/stderr so the suite stays readable."""
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = xray.main(argv)
+        return code, out.getvalue(), err.getvalue()
+
     def test_self_test_entry_point(self):
-        self.assertEqual(xray.main(["--self-test"]), xray.EXIT_CLEAN)
+        code, out, _ = self.run_quiet(["--self-test"])
+        self.assertEqual(code, xray.EXIT_CLEAN)
+        self.assertIn("internal checks passed", out)
 
     def test_list_paths(self):
-        self.assertEqual(xray.main(["--list-paths"]), xray.EXIT_CLEAN)
+        code, out, _ = self.run_quiet(["--list-paths"])
+        self.assertEqual(code, xray.EXIT_CLEAN)
+        self.assertIn("/config.xml", out)
 
     def test_missing_file_is_a_clean_error(self):
-        self.assertEqual(xray.main(["--file", "/no/such/config.xml"]), xray.EXIT_ERROR)
+        code, _out, err = self.run_quiet(["--file", "/no/such/config.xml"])
+        self.assertEqual(code, xray.EXIT_ERROR)
+        self.assertIn("error:", err)
+        self.assertNotIn("Traceback", err)
 
     def test_invalid_concurrency_is_a_clean_error(self):
-        self.assertEqual(xray.main(["--demo", "--concurrency", "0"]), xray.EXIT_ERROR)
+        code, _out, err = self.run_quiet(["--demo", "--concurrency", "0"])
+        self.assertEqual(code, xray.EXIT_ERROR)
+        self.assertIn("--concurrency", err)
 
     def test_invalid_timeout_is_a_clean_error(self):
-        self.assertEqual(xray.main(["--demo", "--timeout", "-1"]), xray.EXIT_ERROR)
+        code, _out, err = self.run_quiet(["--demo", "--timeout", "-1"])
+        self.assertEqual(code, xray.EXIT_ERROR)
+        self.assertIn("--timeout", err)
 
     def test_no_arguments_is_a_clean_error(self):
-        self.assertEqual(xray.main([]), xray.EXIT_ERROR)
+        code, _out, err = self.run_quiet([])
+        self.assertEqual(code, xray.EXIT_ERROR)
+        self.assertIn("error:", err)
+
+    def test_findings_exit_code_is_two(self):
+        code, _out, _err = self.run_quiet(["--demo", "--quiet", "--no-color"])
+        self.assertEqual(code, xray.EXIT_FINDINGS)
+
+    def test_clean_file_exit_code_is_zero(self):
+        with tempfile.NamedTemporaryFile("wb", suffix=".xml", delete=False) as handle:
+            handle.write(b"<html><body>nothing sensitive here</body></html>")
+            path = handle.name
+        try:
+            code, _out, _err = self.run_quiet(["--file", path, "--quiet", "--no-color"])
+            self.assertEqual(code, xray.EXIT_CLEAN)
+        finally:
+            os.unlink(path)
 
     def test_redirect_is_not_followed(self):
         import http.server

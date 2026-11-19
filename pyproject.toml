@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "router-config-xray"
-version = "2.1.0"
+version = "2.1.1"
 description = "Read-only exposure scanner for router/CPE config dumps (authorized testing only)"
 readme = "README.md"
 requires-python = ">=3.8"

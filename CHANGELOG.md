@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here.
 
+## [2.1.1] - 2026-11-19
+
+### Fixed
+- **CI/CD and `make demo` failure:** the demo intentionally exits `2` when findings are detected, which GitHub Actions (bash `-e`) and `make` treated as a failed step. Both now explicitly accept exit codes `0` and `2` using an `|| code=$?` pattern that works under `-e`.
+- Resource leak in `fetch()`: HTTP error responses are now closed after reading (removed `ResourceWarning`).
+- Test output noise and `ResourceWarning`s in tests: CLI tests capture stdout/stderr and test files use context managers.
+
+### Tests
+- 24 unit tests (+2 new): findings exit code is `2`, clean file exit code is `0`.
+- Full CI step sequence verified locally under `bash -e -o pipefail`; all `make` targets pass.
+
 ## [2.1.0] - 2026-11-19
 
 ### Added

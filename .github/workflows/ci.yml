@@ -28,8 +28,14 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Demo smoke test
         run: |
-          python router_config_xray.py --demo --no-color --quiet
-          python router_config_xray.py --demo --no-color --redact --outdir /tmp/xray-evidence
+          # --demo scans the vulnerable decoy config, so exit 2 (findings) is the
+          # expected, successful outcome. Anything else is a real failure.
+          code=0
+          python router_config_xray.py --demo --no-color --quiet || code=$?
+          test "$code" -eq 0 || test "$code" -eq 2
+          code=0
+          python router_config_xray.py --demo --no-color --redact --outdir /tmp/xray-evidence || code=$?
+          test "$code" -eq 0 || test "$code" -eq 2
           test -f /tmp/xray-evidence/report.json
           test -f /tmp/xray-evidence/report.html
           test -f /tmp/xray-evidence/report.md
