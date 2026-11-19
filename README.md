@@ -4,6 +4,8 @@
 
 `router-config-xray` is a read-only scanner for **unauthenticated router/CPE configuration and backup endpoints** (like `/config.xml`). It checks whether a config export is reachable without login, parses the dump, and presents what’s inside in a clear, audit-friendly way — **without brute force, without logging in, and without changing anything on the target**.
 
+> ⚠️ **Works on specific routers/profiles (not universal):** primarily built and observed on **SCTY TG2212-class GPON gateway/CPE** devices with a `ty_httpd`-style web interface exposing unauthenticated **`/config.xml`** in **`DslCpeConfig`** (TR-069/CWMP-style XML) format. Detection may help on similar devices, but extraction/coverage is profile-dependent. See [Compatibility](#compatibility-specific-routers--profiles-important).
+>
 > **Authorized use only.** Run this tool only on devices/networks you own or have explicit written permission to test.
 
 ![mode: read-only](https://img.shields.io/badge/mode-read--only-2ea44f)
