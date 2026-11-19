@@ -1,13 +1,17 @@
 # router-config-xray report
 
-- Generated: 2026-11-19T15:55:47Z UTC
+- Generated: 2026-11-19T16:26:58Z UTC
+- Version: 2.0.0
 - Mode: read-only (no login, no state changes, no persistence/backdoor, no firmware flashing)
 
-## Target: file:///home/anonymous/router-config-xray/samples/decoy_config.xml
+## Target: `file:///home/anonymous/router-config-xray/samples/decoy_config.xml`
 
-**Summary:** Offline analysis of provided config file (for authorized review).
-
-**Access condition:** Offline file analysis (no network request).
+| Field | Value |
+|---|---|
+| Verdict | FINDINGS |
+| Exposure | CRITICAL (85/100) |
+| Summary | Offline analysis of provided config file (for authorized review). |
+| Access | Offline file analysis (no network request). |
 
 ### Device info
 ```json
@@ -150,18 +154,36 @@
 {
   "impact_assessment": "high",
   "potential_impacts": [
-    "Administrative account material exposed — may enable full device management access if reused/valid.",
-    "Wireless network credentials/keys exposed — may enable unauthorized network access and traffic visibility.",
-    "Remote management (TR-069/ACS/CWMP) details exposed — may increase risk of remote provisioning abuse depending on reachability and controls.",
-    "WAN/PPPoE/service details exposed — may aid service abuse, impersonation, or targeted attacks.",
+    "Administrative account material exposed - may enable full device management access if reused/valid.",
+    "Wireless credentials/keys exposed - may enable unauthorized network access and traffic visibility.",
+    "Remote management (TR-069/ACS/CWMP) details exposed - may increase remote provisioning abuse risk.",
+    "WAN/PPPoE/service details exposed - may aid service abuse, impersonation, or targeted attacks.",
     "Additional user/service account material exposed."
   ],
   "factors": [
     "Reachability matters: LAN/Wi-Fi exposure differs from internet/WAN exposure.",
     "No authentication required for the exposed endpoint increases risk when reachable.",
     "Router/gateway compromise can have downstream impact on connected devices and traffic.",
-    "Actual impact depends on credential validity, service exposure, and mitigations — assess in your environment."
+    "Actual impact depends on credential validity, service exposure, and mitigations - assess in your environment."
   ],
   "note": "This tool reports observed exposure and indicators; it does not assign a definitive severity/CVSS score."
 }
 ```
+
+### Exposure score
+```json
+{
+  "score": 85,
+  "label": "CRITICAL",
+  "color": "bright_red",
+  "reasons": [
+    "sensitive unauthenticated config indicators",
+    "6 sensitive config categories extracted",
+    "14 config schema markers"
+  ]
+}
+```
+
+---
+
+*Informational indicators only - not a CVSS score. Authorized testing only.*

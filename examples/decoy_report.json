@@ -1,22 +1,29 @@
 {
   "tool": "router-config-xray",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "mode": "read-only (no login, no state changes, no persistence/backdoor, no firmware flashing)",
-  "generated_at_utc": "2026-11-19T15:55:47Z",
+  "generated_at_utc": "2026-11-19T16:26:58Z",
   "compatibility_notes": [
-    "Best-effort extraction is tuned for DslCpeConfig/TR-069-style XML exports (e.g. configs exposing /config.xml).",
-    "Primary observed profile (authorized testing): SCTY TG2212-class GPON CPE/ONT gateways using a ty_httpd-style web interface with unauthenticated /config.xml.",
-    "Detection/parsing is generic and may work on other routers/firmwares, but coverage and field mapping vary by model and software."
+    "Best-effort extraction is tuned for DslCpeConfig / TR-069-style XML exports (e.g. configs exposing /config.xml).",
+    "Primary observed profile (authorized testing): SCTY TG2212-class GPON CPE/ONT gateways with a ty_httpd-style web interface exposing unauthenticated /config.xml.",
+    "Detection and parsing are generic and may work on other routers/firmwares, but coverage and field mapping vary by model and software."
   ],
+  "scan_plan": {
+    "targets": 1,
+    "endpoints_per_target": 1,
+    "concurrency": 6,
+    "timeout_seconds": 6.0
+  },
   "results": [
     {
       "target": "file:///home/anonymous/router-config-xray/samples/decoy_config.xml",
-      "checked_at_utc": "2026-11-19T15:55:47Z",
+      "checked_at_utc": "2026-11-19T16:26:58Z",
+      "mode": "offline-file",
       "paths": [
         {
           "url": "file:///home/anonymous/router-config-xray/samples/decoy_config.xml",
           "status": 200,
-          "verdict": "LIKELY_EXPOSED_CONFIG",
+          "verdict": "LIKELY_EXPOSED_UNAUTH_CONFIG",
           "analysis": {
             "bytes": 3566,
             "config_markers": 14,
@@ -364,19 +371,29 @@
       "risk_assessment": {
         "impact_assessment": "high",
         "potential_impacts": [
-          "Administrative account material exposed — may enable full device management access if reused/valid.",
-          "Wireless network credentials/keys exposed — may enable unauthorized network access and traffic visibility.",
-          "Remote management (TR-069/ACS/CWMP) details exposed — may increase risk of remote provisioning abuse depending on reachability and controls.",
-          "WAN/PPPoE/service details exposed — may aid service abuse, impersonation, or targeted attacks.",
+          "Administrative account material exposed - may enable full device management access if reused/valid.",
+          "Wireless credentials/keys exposed - may enable unauthorized network access and traffic visibility.",
+          "Remote management (TR-069/ACS/CWMP) details exposed - may increase remote provisioning abuse risk.",
+          "WAN/PPPoE/service details exposed - may aid service abuse, impersonation, or targeted attacks.",
           "Additional user/service account material exposed."
         ],
         "factors": [
           "Reachability matters: LAN/Wi-Fi exposure differs from internet/WAN exposure.",
           "No authentication required for the exposed endpoint increases risk when reachable.",
           "Router/gateway compromise can have downstream impact on connected devices and traffic.",
-          "Actual impact depends on credential validity, service exposure, and mitigations — assess in your environment."
+          "Actual impact depends on credential validity, service exposure, and mitigations - assess in your environment."
         ],
         "note": "This tool reports observed exposure and indicators; it does not assign a definitive severity/CVSS score."
+      },
+      "exposure": {
+        "score": 85,
+        "label": "CRITICAL",
+        "color": "bright_red",
+        "reasons": [
+          "sensitive unauthenticated config indicators",
+          "6 sensitive config categories extracted",
+          "14 config schema markers"
+        ]
       }
     }
   ]

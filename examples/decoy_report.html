@@ -1,6 +1,25 @@
-<!doctype html><html><head><meta charset='utf-8'><title>router-config-xray report</title>
-<style>body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:2rem;max-width:1100px} pre{background:#f6f8fa;padding:1rem;overflow:auto;border-radius:6px} h1{margin-bottom:.2rem} .meta{color:#555}</style></head>
-<body><h1>router-config-xray report</h1><p class='meta'>Generated 2026-11-19T15:55:47Z UTC · mode: read-only (no login, no state changes, no persistence/backdoor, no firmware flashing)</p><h2>Target: file:///home/anonymous/router-config-xray/samples/decoy_config.xml</h2><p><b>Summary:</b> Offline analysis of provided config file (for authorized review).</p><p><b>Access:</b> Offline file analysis (no network request).</p><h3>Device</h3><pre>{
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>router-config-xray report</title>
+<style>
+:root{--bg:#0b1020;--card:#151c31;--ink:#e8edf7;--muted:#9aa7c2;--line:#2a3554;--good:#3ddc97;--bad:#ff5c7a;--accent:#5eead4}
+*{box-sizing:border-box}body{margin:0;padding:2rem;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,Segoe UI,Roboto,sans-serif}
+h1{margin:0 0 .25rem;font-size:2rem;background:linear-gradient(90deg,#5eead4,#a78bfa);-webkit-background-clip:text;color:transparent}
+.meta{color:var(--muted)}.card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--good);border-radius:14px;padding:1.25rem 1.5rem;margin:1.5rem 0;box-shadow:0 8px 30px #0006}
+.card.bad{border-left-color:var(--bad)}h2{margin-top:.2rem;font-size:1.2rem;word-break:break-all}h3{color:var(--accent);font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;margin:1.2rem 0 .4rem}
+.pill{font-size:.7rem;padding:.2rem .6rem;border-radius:99px;vertical-align:middle}.pill.good{background:#3ddc9722;color:var(--good)}.pill.bad{background:#ff5c7a22;color:var(--bad)}
+.score{display:flex;align-items:center;gap:1rem;margin:.8rem 0}.bar{flex:1;height:10px;background:#ffffff12;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#3ddc97,#ffd166,#ff5c7a)}
+pre{background:#0d1426;padding:1rem;border:1px solid var(--line);border-radius:8px;overflow:auto;max-height:340px;color:#cfe3ff}footer{color:var(--muted);margin-top:2rem;font-size:.85rem}
+</style></head><body>
+<h1>router-config-xray <span class="pill">v2.0.0</span></h1>
+<p class="meta">Generated 2026-11-19T16:26:58Z UTC &middot; mode: read-only (no login, no state changes, no persistence/backdoor, no firmware flashing)
+</p>
+
+        <section class="card bad">
+          <h2>file:///home/anonymous/router-config-xray/samples/decoy_config.xml <span class="pill bad">FINDINGS</span></h2>
+          <p class="meta">Offline analysis of provided config file (for authorized review).</p>
+          <div class="score"><span>CRITICAL</span><div class="bar"><i style="width:85%"></i></div><b>85/100</b></div>
+          <h3>Device</h3><pre>{
   &quot;ManufacturerOUI&quot;: &quot;001122&quot;,
   &quot;ProductClass&quot;: &quot;EXAMPLE-ROUTER-X1&quot;,
   &quot;SerialNumber&quot;: &quot;EXAMPLE123456&quot;,
@@ -11,25 +30,29 @@
   &quot;TrueVendorID&quot;: &quot;EXAMPLEVENDOR&quot;,
   &quot;AccessType&quot;: &quot;Gpon&quot;,
   &quot;Product_ID&quot;: &quot;EXAMPLE-ROUTER-X1&quot;
-}</pre><h3>Admin/Web Account</h3><pre>{
+}</pre>
+          <h3>Admin / web account</h3><pre>{
   &quot;username&quot;: &quot;admin&quot;,
   &quot;password&quot;: {
     &quot;raw&quot;: &quot;ExampleAdminPass!&quot;,
     &quot;recovered&quot;: &quot;ExampleAdminPass!&quot;
   }
-}</pre><h3>User GUI Account</h3><pre>{
+}</pre>
+          <h3>User GUI account</h3><pre>{
   &quot;username&quot;: &quot;user&quot;,
   &quot;password&quot;: {
     &quot;raw&quot;: &quot;ExampleUserPass!&quot;,
     &quot;recovered&quot;: &quot;ExampleUserPass!&quot;
   }
-}</pre><h3>Service Accounts</h3><pre>{
+}</pre>
+          <h3>Service accounts</h3><pre>{
   &quot;FtpUserName&quot;: &quot;ftpuser&quot;,
   &quot;FtpPassword&quot;: {
     &quot;raw&quot;: &quot;ExampleFtpPass!&quot;,
     &quot;recovered&quot;: &quot;ExampleFtpPass!&quot;
   }
-}</pre><h3>Wi-Fi</h3><pre>[
+}</pre>
+          <h3>Wi-Fi</h3><pre>[
   {
     &quot;SSID&quot;: &quot;ExampleWiFi&quot;,
     &quot;Enable&quot;: &quot;1&quot;,
@@ -51,7 +74,8 @@
     &quot;SSID&quot;: &quot;GuestNetwork&quot;,
     &quot;Enable&quot;: &quot;0&quot;
   }
-]</pre><h3>TR-069/ACS/CWMP</h3><pre>{
+]</pre>
+          <h3>TR-069 / ACS / CWMP</h3><pre>{
   &quot;URL&quot;: &quot;https://acs.example.invalid:7547/&quot;,
   &quot;Username&quot;: &quot;acs_user&quot;,
   &quot;Password&quot;: {
@@ -69,7 +93,8 @@
   &quot;X_Customer_ConnectionRequestPort&quot;: &quot;7547&quot;,
   &quot;X_Customer_EnableCWMPWanAcl&quot;: &quot;0&quot;,
   &quot;X_Customer_ACL_IpAndMask&quot;: &quot;&quot;
-}</pre><h3>WAN</h3><pre>[
+}</pre>
+          <h3>WAN</h3><pre>[
   {
     &quot;type&quot;: &quot;WANPPPConnection&quot;,
     &quot;Username&quot;: &quot;pppoe_user@example.invalid&quot;,
@@ -88,7 +113,8 @@
     &quot;NATEnabled&quot;: &quot;1&quot;,
     &quot;AddressingType&quot;: &quot;PPPoE&quot;
   }
-]</pre><h3>LAN</h3><pre>[
+]</pre>
+          <h3>LAN</h3><pre>[
   {
     &quot;DHCPServerEnable&quot;: &quot;1&quot;,
     &quot;MinAddress&quot;: &quot;192.168.0.100&quot;,
@@ -96,20 +122,24 @@
     &quot;SubnetMask&quot;: &quot;255.255.255.0&quot;,
     &quot;LAN_IP&quot;: &quot;192.168.0.1&quot;
   }
-]</pre><h3>Impact Assessment</h3><pre>{
+]</pre>
+          <h3>Impact assessment</h3><pre>{
   &quot;impact_assessment&quot;: &quot;high&quot;,
   &quot;potential_impacts&quot;: [
-    &quot;Administrative account material exposed — may enable full device management access if reused/valid.&quot;,
-    &quot;Wireless network credentials/keys exposed — may enable unauthorized network access and traffic visibility.&quot;,
-    &quot;Remote management (TR-069/ACS/CWMP) details exposed — may increase risk of remote provisioning abuse depending on reachability and controls.&quot;,
-    &quot;WAN/PPPoE/service details exposed — may aid service abuse, impersonation, or targeted attacks.&quot;,
+    &quot;Administrative account material exposed - may enable full device management access if reused/valid.&quot;,
+    &quot;Wireless credentials/keys exposed - may enable unauthorized network access and traffic visibility.&quot;,
+    &quot;Remote management (TR-069/ACS/CWMP) details exposed - may increase remote provisioning abuse risk.&quot;,
+    &quot;WAN/PPPoE/service details exposed - may aid service abuse, impersonation, or targeted attacks.&quot;,
     &quot;Additional user/service account material exposed.&quot;
   ],
   &quot;factors&quot;: [
     &quot;Reachability matters: LAN/Wi-Fi exposure differs from internet/WAN exposure.&quot;,
     &quot;No authentication required for the exposed endpoint increases risk when reachable.&quot;,
     &quot;Router/gateway compromise can have downstream impact on connected devices and traffic.&quot;,
-    &quot;Actual impact depends on credential validity, service exposure, and mitigations — assess in your environment.&quot;
+    &quot;Actual impact depends on credential validity, service exposure, and mitigations - assess in your environment.&quot;
   ],
   &quot;note&quot;: &quot;This tool reports observed exposure and indicators; it does not assign a definitive severity/CVSS score.&quot;
-}</pre></body></html>
+}</pre>
+        </section>
+<footer>Informational indicators only - not a CVSS score. Authorized testing only.</footer>
+</body></html>
